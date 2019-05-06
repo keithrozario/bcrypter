@@ -56,4 +56,6 @@ use the -h option for help on variables
 
 # Why Python
 
-Python isn't the best option for this 
+Python isn't the best option for this, but it's the language I'm most familiar with.
+
+That being said, the bcrypt package in Python is actually compiled into C, and C **is** the best language for this.
