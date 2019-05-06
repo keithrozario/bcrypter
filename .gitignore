@@ -25,5 +25,8 @@ venv/*
 .idea
 
 # Node
-node_modules/*
-node_modules
+serverless/node_modules/*
+serverless/node_modules
+
+# Others
+scan.log
