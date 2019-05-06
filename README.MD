@@ -14,11 +14,11 @@ Hence the only true way to crack them is by using large amounts of parallel proc
 
 The solution compares the brcypt hash against the top 1 million passwords from [seclist](https://github.com/danielmiessler/SecLists/tree/master/Passwords/Common-Credentials) and returns a match if found.
 
-By default as many as 1000 parallel lambda functions are invoked, each capable of ~3.3 bcrypt hashes at work factor of 12.
+By default we can invoke as many as 1000 parallel lambda functions are invoked, each capable of ~3.3 bcrypt hashes at work factor of 12.
 
 # How fast
 
-At full speed, with a work factor of 12, we're able to reach speeds of ~3000 hashes per second. This is roughly 4x faster than [8 Nvidia GTX 1080 cards running in parallel](https://gist.github.com/epixoip/a83d38f412b4737e99bbef804a270c40).
+At full speed, with a work factor of 12, we're able to reach speeds of ~3300 hashes per second. This is roughly 4x faster than [8 Nvidia GTX 1080 cards running in parallel](https://gist.github.com/epixoip/a83d38f412b4737e99bbef804a270c40).
 
 Note: The benchmark linked is for work factor 5, which is 128 times slower than work factor 12.
 
