@@ -1,0 +1,90 @@
+
+service: bcrypter
+
+custom:
+  aws_region: ap-southeast-1
+  bucketName: bcrypter.123456
+  queueName: bcrypter-passwords
+
+resources:
+  Resources:
+
+    bcrypterBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
+        AccessControl: Private
+    
+    passwordQueue:
+      Type: AWS::SQS::Queue
+      DependsOn: deadLetterQueue
+      Properties:
+        QueueName: ${self:custom.queueName}
+        MessageRetentionPeriod: 1209600
+        VisibilityTimeout: 240
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - deadLetterQueue
+              - Arn
+          maxReceiveCount: 2
+    
+    deadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.queueName}-dl
+        MessageRetentionPeriod: 1209600
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: prod
+  region: ${self:custom.aws_region}
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - s3:PutObject
+    Resource:
+      Fn::Join:
+        - ""
+        - - "arn:aws:s3:::"
+          - ${self:custom.bucketName}
+          - "/*"
+  - Effect: Allow
+    Action:
+      - sqs:SendMessage
+      - sqs:GetQueueUrl
+    Resource:
+      Fn::GetAtt:
+        - passwordQueue
+        - Arn
+  environment:
+    bucket_name: ${self:custom.bucketName}
+
+layers:
+  Passwords:
+    package:
+      artifact: layers/passwords.zip  # Top 1 Million Passwords
+
+package:
+  exclude:
+   - node_modules
+   - venv
+   - layers/*
+
+functions:
+  bcrypter:
+    handler: brcypter.main
+    description: Bcrypt Lambda Function
+    memorySize: 1536
+    timeout: 150
+    layers:
+      - {Ref: PasswordsLambdaLayer}
+      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-bcrypt:3
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - passwordQueue
+              - Arn
+          batchSize: 1
